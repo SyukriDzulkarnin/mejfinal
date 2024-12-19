@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Eczema Journal'),
+        title: const Text('My Eczema Journal testing'),
         titleTextStyle: GoogleFonts.roboto(
           fontWeight: FontWeight.bold,
           fontSize: 24,

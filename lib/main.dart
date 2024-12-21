@@ -40,65 +40,90 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Eczema Journal testing'),
-        titleTextStyle: GoogleFonts.roboto(
-          fontWeight: FontWeight.bold,
-          fontSize: 24,
-          color: Colors.white,
-          wordSpacing: 5.0,
-        ),
-        backgroundColor: AppColors.primaryColor,
-        centerTitle: true,
-        toolbarHeight: 60,
-      ),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -1),
+      body: Column(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: Color.fromRGBO(30, 187, 215, 1),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(35),
+                bottomRight: Radius.circular(35),
+              ),
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
-          child: GNav(
-            backgroundColor: AppColors.primaryColor,
-            color: Colors.cyan[900] ?? Colors.blue,
-            activeColor: Colors.white,
-            tabBackgroundColor: Colors.cyan[700] ?? Colors.cyan,
-            gap: 8,
-            selectedIndex: _currentIndex,
-            onTabChange: _onTabTapped,
-            tabs: const [
-              GButton(
-                icon: Icons.home,
-                text: 'Home',
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            child: AppBar(
+              title: const Text('My Eczema Journal'),
+              elevation: 0,
+              titleTextStyle: GoogleFonts.roboto(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.white,
+                wordSpacing: 1.5,
               ),
-              GButton(
-                icon: Icons.assessment,
-                text: 'Assessment',
-              ),
-              GButton(
-                icon: Icons.book,
-                text: 'Recommendation',
-              ),
-              GButton(
-                icon: Icons.history,
-                text: 'History',
+              backgroundColor: AppColors.primaryColor,
+              centerTitle: true,
+              toolbarHeight: 80,
+            ),
+          ),
+          Expanded(
+            child: _pages[_currentIndex],
+          ),
+        ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(45),
+              topLeft: Radius.circular(45),
+              bottomLeft: Radius.circular(45),
+              bottomRight: Radius.circular(45),
+            ),
+            color: AppColors.primaryColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+            child: GNav(
+              backgroundColor: AppColors.primaryColor,
+              color: Colors.white,
+              activeColor: Colors.cyan,
+              tabBackgroundColor: Colors.white,
+              gap: 8,
+              selectedIndex: _currentIndex,
+              onTabChange: _onTabTapped,
+              tabs: const [
+                GButton(
+                  icon: Icons.home,
+                  text: 'Home',
+                ),
+                GButton(
+                  icon: Icons.assessment,
+                  text: 'Assessment',
+                ),
+                GButton(
+                  icon: Icons.book,
+                  text: 'Recommendation',
+                ),
+                GButton(
+                  icon: Icons.history,
+                  text: 'History',
+                ),
+              ],
+            )
           ),
         ),
       ),
     );
   }
 }
-
 class HomePageContent extends StatelessWidget {
   const HomePageContent({super.key});
 
@@ -137,12 +162,14 @@ class _DateButtonState extends State<DateButton> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(1.0),
+                padding:const EdgeInsets.symmetric(
+                  horizontal: 35,
+                  vertical: 25,
+                ),
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.3),
               ),
               child: Text(
                 'Weekly',
@@ -153,18 +180,20 @@ class _DateButtonState extends State<DateButton> {
                 ),
               ),
             ),
-            const SizedBox(width: 19),
+            const SizedBox(width: 20),
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(1.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 35, 
+                  vertical: 25,
+                ),
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.5),
               ),
               child: Text(
                 'Monthly',
@@ -175,18 +204,20 @@ class _DateButtonState extends State<DateButton> {
                 ),
               ),
             ),
-            const SizedBox(width: 19),
+            const SizedBox(width: 20),
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                elevation: 5,
-                shadowColor: Colors.black.withOpacity(1.0),
+                padding:const EdgeInsets.symmetric(
+                  horizontal: 35,
+                  vertical: 25,
+                ),
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.5),
               ),
               child: Text(
                 'Yearly',
@@ -220,7 +251,7 @@ class _GraphSevereState extends State<GraphSevere> {
         child: Container(
           decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(30.0),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -234,7 +265,7 @@ class _GraphSevereState extends State<GraphSevere> {
               text: 'Eczema Severity Score',
               textStyle: GoogleFonts.roboto(
                 textStyle: const TextStyle(
-                  color: Colors.black,
+                  color: Colors.cyan,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -302,7 +333,7 @@ class _RecentAssessmentHistoryState extends State<RecentAssessmentHistory> {
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(30.0),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),

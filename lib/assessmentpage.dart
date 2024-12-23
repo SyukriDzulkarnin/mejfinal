@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mej/theme.dart';
+import 'package:provider/provider.dart';
+import 'theme.dart';
+import 'pagestate.dart';
 
 class AssessmentPage extends StatefulWidget {
-  const AssessmentPage({super.key});
+  final Function(int) onTabTapped;
+
+  const AssessmentPage({required this.onTabTapped, super.key});
 
   @override
   _AssessmentPageState createState() => _AssessmentPageState();
@@ -41,20 +45,47 @@ class _AssessmentPageState extends State<AssessmentPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('IGA Score: $score'),
-          content: Text('Condition: $scoreDescription'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _igaScore = score;
-                });
-              },
-              child: Text('Okay'),
+        return Center(
+          child: AlertDialog(
+            title: Center(child: Text('IGA Score: $score', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Condition:'),
+                Text('$scoreDescription',style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.cyan)),
+              ],
             ),
-          ],
+            actions: <Widget>[
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _igaScore = score;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 25, 
+                      vertical: 20,
+                    ),
+                    backgroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    'Okay',
+                    style: GoogleFonts.roboto(
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -81,7 +112,24 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Close', style: GoogleFonts.roboto(fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 25, 
+                      vertical: 20,
+                    ),
+                    backgroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    'Close',
+                    style: GoogleFonts.roboto(
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -90,16 +138,19 @@ class _AssessmentPageState extends State<AssessmentPage> {
       },
     );
   }
+
   void _showImageAlertDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('What is IGA Score?'),
+          title: Center(child: Text('What is IGA Score?', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text('IGA Score is a five point scale that can provide global clinical evaluation of AD (Atopic Dermatitis) severity. The following is the IGA score:'),
+              Text('IGA Score is a five point scale that can provide global clinical evaluation of AD (Atopic Dermatitis) severity.'),
+              SizedBox(height: 10),
+              Text('Investigator’s Global Assessment',style: GoogleFonts.roboto(fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               Image.asset(
                 'images/severity_table.png',
@@ -109,11 +160,30 @@ class _AssessmentPageState extends State<AssessmentPage> {
             ],
           ),
           actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close', style: GoogleFonts.roboto(fontSize: 16)),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 25, 
+                    vertical: 20,
+                  ),
+                  backgroundColor: AppColors.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Text(
+                  'Close',
+                  style: GoogleFonts.roboto(
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         );
@@ -167,11 +237,6 @@ class _AssessmentPageState extends State<AssessmentPage> {
                       int score = int.tryParse(_controller.text) ?? -1;
                       if (score >= 0 && score <= 5) {
                         _showIGAScoreDialog(context, score);
-                      } else {
-                        // Handle invalid input
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Please enter a valid IGA Score (0-5)')),
-                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -245,10 +310,10 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   if (_igaScore != null) IGAChart(score: _igaScore!),
                   const SizedBox(height: 10),
                   Divider(
-                  color: Colors.cyan[100],
-                  thickness: 1,
-                  indent: 10,
-                  endIndent: 10,
+                    color: Colors.cyan[100],
+                    thickness: 1,
+                    indent: 10,
+                    endIndent: 10,
                   ),
                   Row(
                     children: [
@@ -270,6 +335,38 @@ class _AssessmentPageState extends State<AssessmentPage> {
                     ],
                   ),
                   if (_igaScore != null) TreatmentStepChart(step: _getTreatmentStep(_igaScore!)),
+                  if (_igaScore != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final pageState = Provider.of<PageState>(context, listen: false);
+                            pageState.updateAssessment(_igaScore!, _getTreatmentStep(_igaScore!));
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                            widget.onTabTapped(2);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 25, 
+                              vertical: 20,
+                            ),
+                            backgroundColor: AppColors.primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'See Recommendations',
+                            style: GoogleFonts.roboto(
+                              textStyle: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -295,7 +392,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
 class IGAChart extends StatelessWidget {
   final int score;
 
-  const IGAChart({required this.score});
+  const IGAChart({required this.score, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -359,10 +456,11 @@ class IGAChart extends StatelessWidget {
     }
   }
 }
+
 class TreatmentStepChart extends StatelessWidget {
   final int step;
 
-  const TreatmentStepChart({required this.step});
+  const TreatmentStepChart({required this.step, super.key});
 
   @override
   Widget build(BuildContext context) {

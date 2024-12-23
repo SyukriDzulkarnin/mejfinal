@@ -1,20 +1,37 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mej/theme.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'theme.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'pagestate.dart';
 import 'assessmentpage.dart';
 import 'recommendedpage.dart';
 import 'historypage.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    home: HomePage(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => PageState(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-// HomePage
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomePage(),
+    );
+  }
+}
+
 class HomePage extends StatefulWidget {
+  static final GlobalKey<_HomePageState> homePageKey = GlobalKey<_HomePageState>();
+
   const HomePage({super.key});
 
   @override
@@ -24,12 +41,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePageContent(),
-    const AssessmentPage(),
-    const RecommendedPage(),
-    const HistoryPage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePageContent(),
+      AssessmentPage(onTabTapped: _onTabTapped),
+      const RecommendedPage(),
+      const HistoryPage(),
+    ];
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -40,6 +63,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: HomePage.homePageKey,
       body: Column(
         children: [
           Container(
@@ -66,7 +90,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: _pages[_currentIndex],
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
           ),
         ],
       ),
@@ -74,12 +101,7 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(14.0),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(45),
-              topLeft: Radius.circular(45),
-              bottomLeft: Radius.circular(45),
-              bottomRight: Radius.circular(45),
-            ),
+            borderRadius: BorderRadius.circular(45),
             color: AppColors.primaryColor,
             boxShadow: [
               BoxShadow(
@@ -117,13 +139,14 @@ class _HomePageState extends State<HomePage> {
                   text: 'History',
                 ),
               ],
-            )
+            ),
           ),
         ),
       ),
     );
   }
 }
+
 class HomePageContent extends StatelessWidget {
   const HomePageContent({super.key});
 
@@ -164,7 +187,7 @@ class _DateButtonState extends State<DateButton> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
-                padding:const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 35,
                   vertical: 25,
                 ),
@@ -189,7 +212,7 @@ class _DateButtonState extends State<DateButton> {
                   borderRadius: BorderRadius.circular(25),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 35, 
+                  horizontal: 35,
                   vertical: 25,
                 ),
                 elevation: 4,
@@ -212,10 +235,9 @@ class _DateButtonState extends State<DateButton> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
-                padding:const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 35,
-                  vertical: 25,
-                ),
+                  vertical: 25),
                 elevation: 4,
                 shadowColor: Colors.black.withOpacity(0.5),
               ),
@@ -250,16 +272,16 @@ class _GraphSevereState extends State<GraphSevere> {
       child: Center(
         child: Container(
           decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6.0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 6.0,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: SfCartesianChart(
             title: ChartTitle(
               text: 'Eczema Severity Score',
@@ -271,8 +293,6 @@ class _GraphSevereState extends State<GraphSevere> {
               ),
               alignment: ChartAlignment.center,
               borderWidth: 1,
-              //borderColor: Colors.transparent,
-              //backgroundColor: AppColors.primaryColor,
             ),
             primaryXAxis: const CategoryAxis(
               title: AxisTitle(text: 'Month'),

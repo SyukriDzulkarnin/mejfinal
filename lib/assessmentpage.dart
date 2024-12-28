@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'pagestate.dart';
+import 'historyprovider.dart';
 
 class AssessmentPage extends StatefulWidget {
   final Function(int) onTabTapped;
@@ -52,7 +53,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Condition:'),
-                Text('$scoreDescription',style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.cyan)),
+                Text('$scoreDescription', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.cyan)),
               ],
             ),
             actions: <Widget>[
@@ -63,12 +64,10 @@ class _AssessmentPageState extends State<AssessmentPage> {
                     setState(() {
                       _igaScore = score;
                     });
+                    _addHistory(score); // Call _addHistory here
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 25, 
-                      vertical: 20,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -77,9 +76,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   child: Text(
                     'Okay',
                     style: GoogleFonts.roboto(
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                      ),
+                      textStyle: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
@@ -113,10 +110,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 25, 
-                      vertical: 20,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -125,9 +119,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                   child: Text(
                     'Close',
                     style: GoogleFonts.roboto(
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                      ),
+                      textStyle: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
@@ -190,6 +182,22 @@ class _AssessmentPageState extends State<AssessmentPage> {
       },
     );
   }
+  void _addHistory(int score) {
+    final now = DateTime.now();
+    final formattedDate = "${now.day} ${_getMonthName(now.month)} ${now.year}";
+    final formattedTime = "${now.hour}:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}";
+    final treatmentStep = _getTreatmentStep(score);
+
+    Provider.of<HistoryProvider>(context, listen: false).addHistory(score, formattedDate, formattedTime, treatmentStep);
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -240,10 +248,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 25, 
-                        vertical: 20,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
                       backgroundColor: AppColors.primaryColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -252,9 +257,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                     child: Text(
                       'Send',
                       style: GoogleFonts.roboto(
-                        textStyle: const TextStyle(
-                          color: Colors.white,
-                        ),
+                        textStyle: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -347,10 +350,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                             widget.onTabTapped(2);
                           },
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 25, 
-                              vertical: 20,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
                             backgroundColor: AppColors.primaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -359,9 +359,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                           child: Text(
                             'See Recommendations',
                             style: GoogleFonts.roboto(
-                              textStyle: const TextStyle(
-                                color: Colors.white,
-                              ),
+                              textStyle: const TextStyle(color: Colors.white),
                             ),
                           ),
                         ),

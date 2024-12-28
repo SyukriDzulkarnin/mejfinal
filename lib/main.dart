@@ -8,12 +8,16 @@ import 'assessmentpage.dart';
 import 'recommendedpage.dart';
 import 'historypage.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'historyprovider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => PageState(),
-      child: const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (context) => PageState()),
+      ],
+      child: MyApp(),
     ),
   );
 }
@@ -50,7 +54,7 @@ class _HomePageState extends State<HomePage> {
       const HomePageContent(),
       AssessmentPage(onTabTapped: _onTabTapped),
       const RecommendedPage(),
-      const HistoryPage(),
+      HistoryPage(),
     ];
   }
 
@@ -334,71 +338,103 @@ class RecentAssessmentHistory extends StatefulWidget {
   const RecentAssessmentHistory({super.key});
 
   @override
-  _RecentAssessmentHistoryState createState() =>
-      _RecentAssessmentHistoryState();
+  _RecentAssessmentHistoryState createState() => _RecentAssessmentHistoryState();
 }
 
 class _RecentAssessmentHistoryState extends State<RecentAssessmentHistory> {
-  final List<Map<String, String>> history = [
-    {'date': '23 November 2024', 'score': '0'},
-    {'date': '24 November 2024', 'score': '1'},
-    {'date': '25 November 2024', 'score': '2'},
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.all(16.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6.0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Recent Assessment History',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Consumer<HistoryProvider>(
+      builder: (context, historyProvider, child) {
+        return Flexible(
+          child: Container(
+            width: double.infinity,
+            margin: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6.0,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Recent Assessment History',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyan,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                historyProvider.history.isEmpty
+                  ? Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.cyan[200]!),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'No history available.',
+                          style: GoogleFonts.roboto(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: historyProvider.history.length,
+                    itemBuilder: (context, index) {
+                      final entry = historyProvider.history[historyProvider.history.length - 1 - index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Date: ${entry['date']}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              'IGA Score: ${entry['score']}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16.0),
-          ...history.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry['date']!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    'IGA Score: ${entry['score']}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
+        );
+      },
     );
   }
 }

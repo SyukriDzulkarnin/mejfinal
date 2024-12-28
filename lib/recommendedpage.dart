@@ -54,7 +54,7 @@ class RecommendedPage extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(30.0),
+            borderRadius: BorderRadius.circular(40.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -92,14 +92,18 @@ class RecommendedPage extends StatelessWidget {
               const SizedBox(height: 20),
               Expanded(
                 child: recommendations.isEmpty
-                  ? Center(
-                    child: Text(
-                      'Currently there is no assessment found for the recommendations.',
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        color: Colors.grey[600],
+                  ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16.0),
+                    child: Center(
+                      child: Text(
+                        'Currently there is no assessment found for the recommendations.',
+                        style: GoogleFonts.roboto(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   )
                 : ListView.builder(
@@ -132,8 +136,7 @@ class RecommendedPage extends StatelessWidget {
                           ),
                           IconButton(
                             icon: const Icon(Icons.info_outline, color: Colors.white),
-                            onPressed: () {
-                            },
+                            onPressed: () {},
                           ),
                         ],
                       ),

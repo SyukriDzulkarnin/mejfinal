@@ -39,6 +39,7 @@ dependencies:
   dot_navigation_bar: ^1.0.2
   google_nav_bar: ^5.0.7
   provider: ^6.1.2
+  syncfusion_flutter_datepicker: ^28.1.37
 
 dev_dependencies:
   flutter_test:

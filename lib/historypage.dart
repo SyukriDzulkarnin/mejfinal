@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'historyprovider.dart';
+import 'package:intl/intl.dart';
 
 class HistoryPage extends StatelessWidget {
   @override
@@ -68,11 +69,11 @@ class HistoryPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Date: ${entry['date']}',
+                            'Date: ${_formatDate(entry['date'])}',
                             style: GoogleFonts.roboto(),
                           ),
                           Text(
-                            'Time: ${entry['time']}',
+                            'Time: ${_formatTime(entry['time'])}',
                             style: GoogleFonts.roboto(),
                           ),
                         ],
@@ -115,8 +116,8 @@ class HistoryPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Treatment Step: ${entry['treatmentStep']}'),
-              Text('Date: ${entry['date']}'),
-              Text('Time: ${entry['time']}'),
+              Text('Date: ${_formatDate(entry['date'])}'),
+              Text('Time: ${_formatTime(entry['time'])}'),
             ],
           ),
           actions: <Widget>[
@@ -147,50 +148,98 @@ class HistoryPage extends StatelessWidget {
   }
 
   void _showEditDialog(BuildContext context, Map<String, dynamic> entry, int index) {
-    final TextEditingController _controller = TextEditingController(text: entry['score'].toString());
+    final TextEditingController _scoreController = TextEditingController(text: entry['score'].toString());
+    DateTime? _selectedDate;
+    TimeOfDay? _selectedTime;
+
+    try {
+      _selectedDate = DateTime.parse(entry['date']);
+    } catch (e) {
+      _selectedDate = DateTime.now();
+    }
+
+    try {
+      _selectedTime = TimeOfDay(
+        hour: int.parse(entry['time'].split(':')[0]),
+        minute: int.parse(entry['time'].split(':')[1]),
+      );
+    } catch (e) {
+      _selectedTime = TimeOfDay.now();
+    }
+
+    Future<void> _selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate ?? DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null && picked != _selectedDate) {
+        _selectedDate = picked;
+      }
+    }
+
+    Future<void> _selectTime(BuildContext context) async {
+      final TimeOfDay? picked = await showTimePicker(
+        context: context,
+        initialTime: _selectedTime ?? TimeOfDay.now(),
+      );
+      if (picked != null && picked != _selectedTime) {
+        _selectedTime = picked;
+      }
+    }
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Center(child: Text('Edit IGA Score', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
+          title: Center(child: Text('Edit History', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _controller,
+                controller: _scoreController,
                 decoration: InputDecoration(
                   hintText: 'Enter IGA Score (0-5)',
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => _selectDate(context),
+                child: Text(_selectedDate != null
+                    ? "${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)} ${_selectedDate!.year}"
+                    : "Pick a Date"),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => _selectTime(context),
+                child: Text(_selectedTime != null
+                    ? "${_selectedTime!.format(context)}"
+                    : "Pick a Time"),
+              ),
             ],
           ),
           actions: <Widget>[
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  int newScore = int.tryParse(_controller.text) ?? -1;
-                  if (newScore >= 0 && newScore <= 5) {
-                    _updateHistory(context, newScore, index);
-                    Navigator.of(context).pop();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-                  backgroundColor: AppColors.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Update',
-                  style: GoogleFonts.roboto(
-                    textStyle: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                int newScore = int.tryParse(_scoreController.text) ?? -1;
+                if (newScore >= 0 && newScore <= 5) {
+                  entry['score'] = newScore;
+                  entry['date'] = "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}";
+                  entry['time'] = "${_selectedTime!.hour}:${_selectedTime!.minute.toString().padLeft(2, '0')}";
+                  Provider.of<HistoryProvider>(context, listen: false).updateHistory(index, entry);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Save'),
             ),
           ],
         );
@@ -222,6 +271,37 @@ class HistoryPage extends StatelessWidget {
       return 3;
     } else {
       return 4;
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
+
+  String _formatDate(String date) {
+    try {
+      final DateTime parsedDate = DateTime.parse(date);
+      return DateFormat('dd MMMM yyyy').format(parsedDate);
+    } catch (e) {
+      return date;
+    }
+  }
+
+  String _formatTime(String time) {
+    try {
+      final TimeOfDay parsedTime = TimeOfDay(
+        hour: int.parse(time.split(':')[0]),
+        minute: int.parse(time.split(':')[1]),
+      );
+      final now = DateTime.now();
+      final formattedTime = DateTime(now.year, now.month, now.day, parsedTime.hour, parsedTime.minute);
+      return DateFormat('hh:mm a').format(formattedTime);
+    } catch (e) {
+      return time;
     }
   }
 }

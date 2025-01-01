@@ -16,6 +16,9 @@ class AssessmentPage extends StatefulWidget {
 
 class _AssessmentPageState extends State<AssessmentPage> {
   int? _igaScore;
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+  bool _showSkinAnalysis = false;
 
   void _showIGAScoreDialog(BuildContext context, int score) {
     String scoreDescription;
@@ -64,7 +67,6 @@ class _AssessmentPageState extends State<AssessmentPage> {
                     setState(() {
                       _igaScore = score;
                     });
-                    _addHistory(score); // Call _addHistory here
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
@@ -182,10 +184,36 @@ class _AssessmentPageState extends State<AssessmentPage> {
       },
     );
   }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
   void _addHistory(int score) {
-    final now = DateTime.now();
-    final formattedDate = "${now.day} ${_getMonthName(now.month)} ${now.year}";
-    final formattedTime = "${now.hour}:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}";
+    final formattedDate = _selectedDate != null ? "${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)} ${_selectedDate!.year}" : "Unknown Date";
+    final formattedTime = _selectedTime != null ? "${_selectedTime!.hour}:${_selectedTime!.minute.toString().padLeft(2, '0')}" : "Unknown Time";
     final treatmentStep = _getTreatmentStep(score);
 
     Provider.of<HistoryProvider>(context, listen: false).addHistory(score, formattedDate, formattedTime, treatmentStep);
@@ -199,149 +227,302 @@ class _AssessmentPageState extends State<AssessmentPage> {
     return months[month - 1];
   }
 
+  String _getScoreDescription(int score) {
+    switch (score) {
+      case 0:
+        return 'Clear';
+      case 1:
+        return 'Almost\nClear';
+      case 2:
+        return 'Mild\nDisease';
+      case 3:
+        return 'Moderate\nDisease';
+      case 4:
+        return 'Severe\nDisease';
+      case 5:
+        return 'Very\nSevere\nDisease';
+      default:
+        return 'Unknown';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _controller = TextEditingController();
-
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 80,
-      ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6.0,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              width: double.infinity,
-              height: 60,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Enter IGA Score',
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                      keyboardType: TextInputType.number,
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 6.0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.cyan,
+                            borderRadius: BorderRadius.circular(35.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 6.0,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                'IGA Score',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(6, (index) {
+                                  return Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          _showIGAScoreDialog(context, index);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: _igaScore == index ? Colors.white : Colors.cyan,
+                                          foregroundColor: _igaScore == index ? Colors.cyan : Colors.white,
+                                          side: BorderSide(color: Colors.white),
+                                          shape: CircleBorder(),
+                                          padding: EdgeInsets.all(20),
+                                        ),
+                                        child: Text(
+                                          '$index',
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    _selectDate(context);
+                                  },
+                                  icon: Icon(Icons.calendar_today, color: Colors.cyan),
+                                  label: Text(
+                                    _selectedDate != null
+                                        ? "${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)} ${_selectedDate!.year}"
+                                        : "Pick a Date",
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 16,
+                                      color: Colors.cyan,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.cyan,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(35),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 20),
+                                    side: BorderSide(color: Colors.cyan),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    _selectTime(context);
+                                  },
+                                  icon: Icon(Icons.access_time, color: Colors.cyan),
+                                  label: Text(
+                                    _selectedTime != null
+                                        ? "${_selectedTime!.format(context)}"
+                                        : "Pick a Time",
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 16,
+                                      color: Colors.cyan,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.cyan,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(35),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 20),
+                                    side: BorderSide(color: Colors.cyan),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: (_igaScore != null && _selectedDate != null && _selectedTime != null)
+                                ? () {
+                                    _addHistory(_igaScore!);
+                                    setState(() {
+                                      _showSkinAnalysis = true;
+                                    });
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: Text('Success!'),
+                                          content: Text('Assessment has been made successfully.'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 30),
+                              backgroundColor: (_igaScore != null && _selectedDate != null && _selectedTime != null) ? Colors.cyan : AppColors.primaryColor,
+                              foregroundColor: (_igaScore != null && _selectedDate != null && _selectedTime != null) ? Colors.white : Colors.cyan,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(35),
+                              ),
+                            ),
+                            child: Text(
+                              'Send',
+                              style: GoogleFonts.roboto(
+                                textStyle: TextStyle(
+                                  color: (_igaScore != null && _selectedDate != null && _selectedTime != null) ? Colors.white : Colors.cyan,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      int score = int.tryParse(_controller.text) ?? -1;
-                      if (score >= 0 && score <= 5) {
-                        _showIGAScoreDialog(context, score);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
-                      backgroundColor: AppColors.primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: Text(
-                      'Send',
-                      style: GoogleFonts.roboto(
-                        textStyle: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6.0,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(16.0),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Skin Analysis',
-                    style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.cyan,
+            if (_showSkinAnalysis)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6.0,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'IGA Score',
-                          style: GoogleFonts.roboto(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                  ],
+                ),
+                padding: const EdgeInsets.all(16.0),
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Skin Analysis',
+                      style: GoogleFonts.roboto(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.cyan,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'IGA Score',
+                            style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.help_outline),
-                        onPressed: () {
-                          _showImageAlertDialog(context);
-                        },
-                      ),
-                    ],
-                  ),
-                  if (_igaScore != null) IGAChart(score: _igaScore!),
-                  const SizedBox(height: 10),
-                  Divider(
-                    color: Colors.cyan[100],
-                    thickness: 1,
-                    indent: 10,
-                    endIndent: 10,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Treatment Step',
-                          style: GoogleFonts.roboto(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        IconButton(
+                          icon: const Icon(Icons.help_outline),
+                          onPressed: () {
+                            _showImageAlertDialog(context);
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_igaScore != null) IGAChart(score: _igaScore!, getScoreDescription: _getScoreDescription),
+                    const SizedBox(height: 10),
+                    Divider(
+                      color: Colors.cyan[100],
+                      thickness: 1,
+                      indent: 10,
+                      endIndent: 10,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Treatment Step',
+                            style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.help_outline),
-                        onPressed: () {
-                          _showHelpDialog(context, 'Treatment Step');
-                        },
-                      ),
-                    ],
-                  ),
-                  if (_igaScore != null) TreatmentStepChart(step: _getTreatmentStep(_igaScore!)),
-                  if (_igaScore != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Center(
+                        IconButton(
+                          icon: const Icon(Icons.help_outline),
+                          onPressed: () {
+                            _showHelpDialog(context, 'Treatment Step');
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_igaScore != null) TreatmentStepChart(step: _getTreatmentStep(_igaScore!)),
+                    if (_igaScore != null)
+                      const SizedBox(height: 25),
+                      Container(
+                        width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
                             final pageState = Provider.of<PageState>(context, listen: false);
@@ -350,7 +531,7 @@ class _AssessmentPageState extends State<AssessmentPage> {
                             widget.onTabTapped(2);
                           },
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                            padding: const EdgeInsets.symmetric(vertical: 30),
                             backgroundColor: AppColors.primaryColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -364,16 +545,14 @@ class _AssessmentPageState extends State<AssessmentPage> {
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
-
   int _getTreatmentStep(int score) {
     if (score == 0 || score == 1) {
       return 1;
@@ -389,8 +568,9 @@ class _AssessmentPageState extends State<AssessmentPage> {
 
 class IGAChart extends StatelessWidget {
   final int score;
+  final String Function(int) getScoreDescription;
 
-  const IGAChart({required this.score, super.key});
+  const IGAChart({required this.score, required this.getScoreDescription, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +601,7 @@ class IGAChart extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  _getScoreDescription(index),
+                  getScoreDescription(index),
                   style: GoogleFonts.roboto(
                     fontSize: 12,
                     color: index == score ? Colors.blue : Colors.black,
@@ -433,25 +613,6 @@ class IGAChart extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _getScoreDescription(int score) {
-    switch (score) {
-      case 0:
-        return 'Clear';
-      case 1:
-        return 'Almost Clear';
-      case 2:
-        return 'Mild';
-      case 3:
-        return 'Moderate';
-      case 4:
-        return 'Severe';
-      case 5:
-        return 'Very Severe';
-      default:
-        return '';
-    }
   }
 }
 

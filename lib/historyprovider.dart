@@ -15,13 +15,13 @@ class HistoryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteHistory(int index) {
-    _history.removeAt(index);
+  void updateHistory(int index, Map<String, dynamic> entry) {
+    _history[index] = entry;
     notifyListeners();
   }
 
-  void updateHistory(int index, Map<String, dynamic> updatedEntry) {
-    _history[index] = updatedEntry;
+  void deleteHistory(int index) {
+    _history.removeAt(index);
     notifyListeners();
   }
 }

@@ -192,56 +192,156 @@ class HistoryPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Center(child: Text('Edit History', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _scoreController,
-                decoration: InputDecoration(
-                  hintText: 'Enter IGA Score (0-5)',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Center(child: Text('Edit History', style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold))),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 6.0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _scoreController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter IGA Score (0-5)',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await _selectDate(context);
+                              setState(() {});
+                            },
+                            icon: Icon(Icons.calendar_today, color: Colors.cyan),
+                            label: Text(
+                              _selectedDate != null
+                                  ? "${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)} ${_selectedDate!.year}"
+                                  : "Pick a Date",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Colors.cyan,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.cyan,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(35),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 30),
+                              side: BorderSide(color: Colors.cyan),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await _selectTime(context);
+                              setState(() {});
+                            },
+                            icon: Icon(Icons.access_time, color: Colors.cyan),
+                            label: Text(
+                              _selectedTime != null
+                                  ? "${_selectedTime!.format(context)}"
+                                  : "Pick a Time",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                color: Colors.cyan,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.cyan,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(35),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 30),
+                              side: BorderSide(color: Colors.cyan),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan,
+                          padding: const EdgeInsets.symmetric(vertical: 25),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(35),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          int newScore = int.tryParse(_scoreController.text) ?? -1;
+                          if (newScore >= 0 && newScore <= 5) {
+                            entry['score'] = newScore;
+                            entry['date'] = "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}";
+                            entry['time'] = "${_selectedTime!.hour}:${_selectedTime!.minute.toString().padLeft(2, '0')}";
+                            Provider.of<HistoryProvider>(context, listen: false).updateHistory(index, entry);
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.cyan,
+                          padding: const EdgeInsets.symmetric(vertical: 25),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(35),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: Text(
+                          'Save',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () => _selectDate(context),
-                child: Text(_selectedDate != null
-                    ? "${_selectedDate!.day} ${_getMonthName(_selectedDate!.month)} ${_selectedDate!.year}"
-                    : "Pick a Date"),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () => _selectTime(context),
-                child: Text(_selectedTime != null
-                    ? "${_selectedTime!.format(context)}"
-                    : "Pick a Time"),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                int newScore = int.tryParse(_scoreController.text) ?? -1;
-                if (newScore >= 0 && newScore <= 5) {
-                  entry['score'] = newScore;
-                  entry['date'] = "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}";
-                  entry['time'] = "${_selectedTime!.hour}:${_selectedTime!.minute.toString().padLeft(2, '0')}";
-                  Provider.of<HistoryProvider>(context, listen: false).updateHistory(index, entry);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('Save'),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );

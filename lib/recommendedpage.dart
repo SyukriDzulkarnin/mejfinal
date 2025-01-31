@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 class RecommendedPage extends StatelessWidget {
   const RecommendedPage({super.key});
-
+  // Method to get recommendations based on the treatment step
   List<String> _getRecommendations(int step) {
     switch (step) {
       case 1:
@@ -90,6 +90,7 @@ class RecommendedPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+              // Placeholder for no assessment found
               Expanded(
                 child: recommendations.isEmpty
                   ? Container(
@@ -106,6 +107,7 @@ class RecommendedPage extends StatelessWidget {
                       ),
                     ),
                   )
+                  // Recommendation list will shown here
                 : ListView.builder(
                   itemCount: recommendations.length,
                   itemBuilder: (context, index) {
@@ -133,10 +135,6 @@ class RecommendedPage extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.info_outline, color: Colors.white),
-                            onPressed: () {},
                           ),
                         ],
                       ),

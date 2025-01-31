@@ -1,0 +1,1 @@
+enum FilterType { weekly, monthly, yearly }

@@ -20,7 +20,7 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
-        apiKey: "AIzaSyAmSNatTNZnWZomROlBJLB-a4pLlR34q0g",
+        apiKey: "apikey",
         authDomain: "flutter-auth-cc778.firebaseapp.com",
         projectId: "flutter-auth-cc778",
         storageBucket: "flutter-auth-cc778.appspot.com",
